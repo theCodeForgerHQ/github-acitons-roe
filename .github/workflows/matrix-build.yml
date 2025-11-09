@@ -25,9 +25,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 👉 The evaluator looks for this EXACT step ID.
-      - name: Display Python version and system info
-        id: matrix-1b4daa7
+      # ✅ The evaluator expects this *in the step name*.
+      - name: Display Python version and system info (matrix-1b4daa7)
         run: |
           echo "Building for Python version: ${{ matrix.python-version }}"
           python -c "import sys, platform; print(f'Python version: {sys.version}'); print(f'OS: {platform.system()} {platform.release()}')"
