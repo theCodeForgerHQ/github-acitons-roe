@@ -1,0 +1,58 @@
+# .github/workflows/matrix-build.yml
+
+name: 'Multi-Platform Matrix Build'
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+
+jobs:
+  build:
+    # We will run this job on the latest version of Ubuntu
+    runs-on: ubuntu-latest
+
+    # Define the matrix strategy
+    strategy:
+      # This ensures that even if one matrix job fails, the others will continue to run.
+      fail-fast: false
+      matrix:
+        # We define a 'python-version' variable with three different values.
+        # This will cause the 'build' job to run three times, in parallel,
+        # with each run having a different value for matrix.python-version.
+        python-version: ['3.9', '3.10', '3.11']
+
+    steps:
+      - name: 'Checkout repository code'
+        uses: actions/checkout@v4
+
+      - name: 'Set up Python ${{ matrix.python-version }}'
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 'Display Python version and system info'
+        # This step includes the required identifier: matrix-1b4daa7
+        id: matrix-1b4daa7
+        run: |
+          echo "Building for Python version: ${{ matrix.python-version }}"
+          python -c "import sys, platform; print(f'Python version: {sys.version}'); print(f'OS: {platform.system()} {platform.release()}')"
+
+      - name: 'Generate build artifact'
+        # Creates a unique text file for each job in the matrix.
+        # The content of the file reflects the Python version used.
+        run: |
+          echo "This artifact was built using Python ${{ matrix.python-version }}." > build-output.txt
+          echo "Content for artifact created."
+
+      - name: 'Upload build artifact'
+        # Uses the official action to upload artifacts.
+        uses: actions/upload-artifact@v4
+        with:
+          # The artifact name is constructed dynamically using the matrix variable.
+          # It follows the required pattern: build-1b4daa7-<variant>
+          name: build-1b4daa7-py${{ matrix.python-version }}
+          # The path to the file(s) to be uploaded.
+          path: build-output.txt
